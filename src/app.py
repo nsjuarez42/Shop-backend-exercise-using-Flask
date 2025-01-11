@@ -8,32 +8,17 @@ db = DB_factory.create_db("mysql")
 
 if not db.has_data():
     #make request to json api products
-    data = []
-    db.fill(data)
+    db.fill()
 
 #TODO:
 #login
 #register
-#db methods in DB class and implement every method in subclasses
-#methods 
-#get by id
-#get all
-#add
-#edit by id
-#delete
-
 
 COLUMN_NAMES = db.get_column_names()
 
 app = Flask(__name__)
 
 CORS(app,resources={r"/products":{"origins":"*"}})
-
-def product_to_json(product,columns):
-    json = {}
-    for i,c in enumerate(columns):
-        json[c] = product[i]
-    return json
 
 
 @app.before_request
@@ -55,7 +40,7 @@ def get_product(product_name):
   
     if product is None:
         return jsonify({"message":"Product not found"}),404
-    return jsonify({"message":"Product found","Product":product_to_json(product,COLUMN_NAMES)}),200
+    return jsonify({"message":"Product found","Product":product}),200
 
 
 @app.route("/products",methods=['POST'])
@@ -70,13 +55,7 @@ def add_product():
 
     inserted = db.get_product_by_id(id)
 
-
-    json = {}
-    for i,name in enumerate(column_names):
-        json[name] = inserted[i]
-    print(json)
-
-    return jsonify({"message":"Inserted successfully","product":json}),200
+    return jsonify({"message":"Inserted successfully","product":inserted}),200
 
 @app.route("/products/<int:id>",methods=["PUT"])
 def edit_product(id):
@@ -94,7 +73,7 @@ def edit_product(id):
 
     data = db.get_product_by_id(id) 
 
-    return jsonify({"Message":"Updated successfully","product":product_to_json(data,COLUMN_NAMES)}),200
+    return jsonify({"Message":"Updated successfully","product":data}),200
 
 @app.route("/products/<int:id>",methods=["PATCH"])
 def patch_product(id):
@@ -111,12 +90,11 @@ def patch_product(id):
     if product is None:
         return jsonify({"Error":"product not found"}),400
     
-    db.update(data,"products",["ID={}".format(id)])
+    db.update_product_by_id(id,data)
 
-    new_product = db.select(["*"],"products",["ID={}".format(id)])
+    new_product = db.get_product_by_id(id)
 
-
-    return jsonify({"message":"Product updated successfully","product":product_to_json(new_product,COLUMN_NAMES)})
+    return jsonify({"message":"Product updated successfully","product":new_product})
 
 @app.route("/products/<int:id>",methods=['DELETE'])
 def delete_product(id):
@@ -124,11 +102,11 @@ def delete_product(id):
     product = db.get_product_by_id(id)
 
     if product is None:
-        return jsonify({"Error":"User not found"}),404
+        return jsonify({"Error":"Product not found"}),404
     
     db.delete_product_by_id(id)
 
-    return jsonify({"msg":"Deleted successfully","product":product_to_json(product,COLUMN_NAMES)}),200
+    return jsonify({"msg":"Deleted successfully","product":product}),200
 
 if __name__ == "__main__":
     app.run(debug=True)

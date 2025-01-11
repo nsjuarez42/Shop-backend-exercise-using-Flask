@@ -1,9 +1,8 @@
 from model.DB import DB
 import sqlite3
-from products import products
+from sample_data import products
 
 DB_NAME = "products"
-
 
 def product_to_json(product,columns):
     json = {}
@@ -27,8 +26,8 @@ class mysql_db(DB):
         return len(tables) > 0
     
     def fill(self):
-        products = "CREATE TABLE products(ID INTEGER AUTO_INCREMENT PRIMARY KEY,name VARCHAR(100) NOT NULL UNIQUE,price INTEGER UNSIGNED NOT NULL,quantity INTEGER UNSIGNED NOT NULL)"
-        self.cursor.execute(products)
+        create = "CREATE TABLE products(ID INTEGER AUTO_INCREMENT PRIMARY KEY,name VARCHAR(100) NOT NULL UNIQUE,price INTEGER UNSIGNED NOT NULL,quantity INTEGER UNSIGNED NOT NULL)"
+        self.cursor.execute(create)
         for product in products:
             self.cursor.execute("INSERT INTO products VALUES(NULL,?,?,?)",(product["name"],product['price'],product['quantity']))
         self.conn.commit()
@@ -37,10 +36,10 @@ class mysql_db(DB):
         return [product_to_json(i,self.get_column_names()) for i in self.cursor.execute("SELECT * FROM products").fetchall()]
    
     def get_product_by_id(self,id):
-        return self.cursor.execute("SELECT * FROM products WHERE ID=?",(id,)).fetchone()
+        return product_to_json(self.cursor.execute("SELECT * FROM products WHERE ID=?",(id,)).fetchone(),self.get_column_names())
   
     def get_product_by_name(self,name):
-        return self.cursor.execute("SELECT * FROM products WHERE name=?",(name,)).fetchone()
+        return product_to_json(self.cursor.execute("SELECT * FROM products WHERE name=?",(name,)).fetchone(),self.get_column_names())
     
     def add_product(self,product):
         self.cursor.execute("INSERT INTO products VALUES(NULL,?,?,?)",(product["name"],product["price"],product["quantity"]))
