@@ -3,6 +3,8 @@ from model.users.usersmysql import users
 from model.products.productsmysql import products
 from model.reviews.reviewsmysql import reviews_mysql
 from model.categories.categories_mysql import categories_mysql
+from model.tags.tagsmysql import tags_mysql
+from model.images.images_mysql import images_mysql
 
 import mysql.connector
 
@@ -21,6 +23,8 @@ class Mysql(DBABC):
         self.__users = users(conn,cursor)
         self.__reviews = reviews_mysql(conn,cursor)
         self.__categories = categories_mysql(conn,cursor)
+        self.__tags = tags_mysql(conn,cursor)
+        self.__images = images_mysql(conn,cursor)
 
     @property
     def products(self):
@@ -32,7 +36,7 @@ class Mysql(DBABC):
     
     @property 
     def images(self):
-        return None
+        return self.__images
     
     @property
     def categories(self):
@@ -40,7 +44,7 @@ class Mysql(DBABC):
     
     @property
     def tags(self):
-        return None
+        return self.__tags
     
     @property
     def reviews(self):

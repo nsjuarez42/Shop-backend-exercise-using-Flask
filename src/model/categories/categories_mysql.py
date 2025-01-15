@@ -6,7 +6,6 @@ def category_to_json(category,columns):
         json[c] = category[i]
     return json
 
-
 class categories_mysql(categories):
 
     def __init__(self,conn,cursor):

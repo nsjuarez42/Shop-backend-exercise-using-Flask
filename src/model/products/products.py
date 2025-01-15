@@ -4,8 +4,16 @@ class products_ABC(ABC):
 
     @abstractmethod
     def __init__(self,conn,cursor):
-        self.conn = conn
-        self.cursor = cursor
+        pass
+
+    @abstractmethod
+    def filter_products(self,filters):
+        pass
+
+
+    @abstractmethod
+    def get_pages(self):
+        pass
 
     @abstractmethod
     def get_page(self,page):

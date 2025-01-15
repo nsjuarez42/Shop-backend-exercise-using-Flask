@@ -2,18 +2,21 @@ from __main__ import app
 from model.DB.current import db
 from flask import jsonify,request
 
-print("db type is {}".format(type(db)))
-print("db is {}".format(db))
-print("Dir of db is {}".format(dir(db)))
-print("db.products {}".format(db.products))
-print("db.products type is {}".format(type(db.products)))
-print("Dir of db products is {}".format(dir(db.products)))
-
 PRODUCT_COLUMN_NAMES = db.products.get_column_names()
 
 @app.route("/products",methods=["GET"])
 def get_products():
     return jsonify({"message":"Products list","products":db.products.get_all()})
+
+@app.route("/products/filter",methods=["POST"])
+def filtered_products():
+    data = request.json
+
+    if 'tags' not in data.keys() and 'category' not in data.keys():
+        return jsonify({"error":"data format not valid"}),400
+
+    return jsonify({"msg":"filtered products by {} and {}".format(", ".join(data['tags']),data['category']),"products":db.products.filter_products(data)})
+
 
 @app.route("/products/<int:id>",methods=["GET"])
 def get_product(id):
@@ -94,4 +97,4 @@ def delete_product(id):
 
 @app.route("/products/page/<int:page>")
 def get_products_page(page):
-    return jsonify({"msg":"Products for page {}".format(page),"products":db.products.get_page(page)})
+    return jsonify({"msg":"Products for page {}".format(page),"products":db.products.get_page(page),'pagesAmount':db.products.get_pages()})
