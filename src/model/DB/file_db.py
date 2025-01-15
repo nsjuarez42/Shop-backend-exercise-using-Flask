@@ -1,12 +1,14 @@
 from model.DB import DB
 from sample_data import products
 import os
-
 import json
 
 class file_db(DB):
 
-    def get_column_names(self):
+    def get_users_column_names(self):
+        return super().get_users_column_names()
+
+    def get_product_column_names(self):
         with open("./src/model/products.py","rb") as f:
             file = f.read().decode()
             file = file.replace("products = ","").replace(" ","")
