@@ -2,7 +2,7 @@ from __main__ import app
 from model.DB.current import db
 from flask import jsonify,request
 
-PRODUCT_COLUMN_NAMES = db.products.get_column_names()
+PRODUCT_COLUMN_NAMES = db.products.columns
 
 @app.route("/products",methods=["GET"])
 def get_products():

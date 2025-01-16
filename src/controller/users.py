@@ -5,7 +5,7 @@ from model.DB.current import db
 import bcrypt
 
 
-USERS_COLUMN_NAMES = db.users.get_column_names()
+USERS_COLUMN_NAMES = db.users.columns
 
 @app.route("/register",methods=["POST"])
 def register():

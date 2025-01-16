@@ -11,12 +11,13 @@ app.config["JWT_SECRET_KEY"] = config["SECRET"]
 jwt = JWTManager(app)
 CORS(app)#resources={r"/":{"origins":"*"}})
 
-import controller.categories
 import controller.images
 import controller.products
 import controller.users
 import controller.tags
 import controller.reviews
+import controller.categories
+
 #db = DB_factory.create_db("file")
 
 #TODO:

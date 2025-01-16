@@ -1,5 +1,5 @@
 from __main__ import app
-from flask import jsonify,request
+from flask import jsonify
 from model.DB.current import db
 
 @app.route("/categories")

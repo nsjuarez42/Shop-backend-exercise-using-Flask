@@ -2,8 +2,14 @@ from abc import abstractmethod,ABC
 
 class categories(ABC):
 
+    @property
     @abstractmethod
-    def __init__(self,conn,cursor):
+    def columns(self):
+        pass
+
+    @columns.setter
+    @abstractmethod
+    def columns(self,c):
         pass
 
     @abstractmethod
@@ -12,8 +18,4 @@ class categories(ABC):
 
     @abstractmethod
     def get_by_id(self,id):
-        pass
-
-    @abstractmethod 
-    def get_column_names(self):
         pass

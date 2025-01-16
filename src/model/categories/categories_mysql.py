@@ -1,28 +1,28 @@
 from model.categories.categories import categories
-
-def category_to_json(category,columns):
-    json = {}
-    for i,c in enumerate(columns):
-        json[c] = category[i]
-    return json
+from model.DB.mysqlhelpers import object_to_json,manage_connection,get_column_names
 
 class categories_mysql(categories):
 
-    def __init__(self,conn,cursor):
-        self.conn = conn
-        self.cursor = cursor
+    def __init__(self,db):
+        self.__db = db
+        self.__columns = get_column_names("categories") 
 
-    def get_all(self):
-        self.cursor.execute("SELECT * FROM categories")
-        categories = self.cursor.fetchall()
-        return [category_to_json(c,self.get_column_names()) for c in categories]
+    @property
+    def columns(self):
+        return self.__columns
     
+    @columns.setter
+    def columns(self,c):
+        self.__columns = c
+
+    @manage_connection
+    def get_all(self):
+        self.__db.cursor.execute("SELECT * FROM categories")
+        categories = self.__db.cursor.fetchall()
+        return [object_to_json(c,self.columns) for c in categories]
+    
+    @manage_connection
     def get_by_id(self, id):
         self.cursor.execute("SELECT * FROM categories WHERE ID=%s",(id,))
         category = self.cursor.fetchone()
-        return category_to_json(category,self.get_column_names()) if category else None
-    
-    def get_column_names(self):
-        self.cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_schema='products' AND table_name='categories' ORDER BY ordinal_position")
-        columns = self.cursor.fetchall()
-        return [c[0] for c in columns]
+        return object_to_json(category,self.columns) if category else None

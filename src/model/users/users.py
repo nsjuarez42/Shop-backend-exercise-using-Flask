@@ -1,13 +1,10 @@
 from abc import ABC,abstractmethod
 
+
 class users_ABC(ABC):
 
     @abstractmethod
-    def __init__(self,conn,cursor):
-        pass
-
-    @abstractmethod
-    def get_column_names(self):
+    def __init__(self):
         pass
 
     @abstractmethod

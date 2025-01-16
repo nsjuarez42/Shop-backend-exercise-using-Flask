@@ -1,45 +1,56 @@
 from model.products.products import products_ABC
-from math import trunc
-
-def product_to_json(product,columns):
-    json = {}
-    print(product)
-    for i,c in enumerate(columns):
-        json[c] = product[i]
-    return json
+from model.DB.mysqlconnection import Connection
+from model.DB.mysqlhelpers import manage_connection,get_column_names,object_to_json
 
 products_per_page = 21
 
 class products(products_ABC):
 
-    def __init__(self,conn,cursor):
-        self.conn = conn
-        self.cursor = cursor
+   
+    def __init__(self,db):
+        print(type(db))
+        print(db)
+        self.__columns = get_column_names("products")
+        self.__db = db
 
+    @property
+    def columns(self):
+        return self.__columns
+    
+    @columns.setter
+    def columns(self,c):
+        self.__columns = c
+
+    @manage_connection
     def get_all(self):
-        self.cursor.execute("SELECT * FROM products")
-        products = self.cursor.fetchall()
-        return [product_to_json(p,self.get_column_names()) for p in products]
+        self.__db.cursor.execute("SELECT * FROM products")
+        products = self.__db.cursor.fetchall()
+        return [object_to_json(p,self.columns) for p in products]
     
+    @manage_connection
     def get_by_id(self,id):
-        self.cursor.execute("SELECT * FROM products WHERE ID=%s",(id,))
-        product = self.cursor.fetchone()
-        return product_to_json(product,self.get_column_names()) if product else None
+        self.__db.cursor.execute("SELECT * FROM products WHERE ID=%s",(id,))
+        product = self.__db.cursor.fetchone()
+        return object_to_json(product,self.columns) if product else None
     
+    @manage_connection
     def get_by_title(self,title):
-        self.cursor.execute("SELECT * FROM products WHERE title=%s",(title,))
-        product = self.cursor.fetchone()
-        return product_to_json(product,self.get_column_names()) if product else None
+        self.__db.cursor.execute("SELECT * FROM products WHERE title=%s",(title,))
+        product = self.__db.cursor.fetchone()
+        return object_to_json(product,self.columns) if product else None
     
+    @manage_connection
     def add(self,product):
-        self.cursor.execute("INSERT INTO products VALUES(NULL,{})".format(",".join(["?" for i in product])),tuple(product.values()))
-        self.conn.commit()
-        return self.cursor.lastrowid
+        self.__db.cursor.execute("INSERT INTO products VALUES(NULL,{})".format(",".join(["?" for i in product])),tuple(product.values()))
+        self.__db.conn.commit()
+        return self.__db.cursor.lastrowid
     
+    @manage_connection
     def delete_by_id(self,id):
-        self.cursor.execute("DELETE FROM products WHERE id=?",(id,))
-        self.conn.commit()
-    
+        self.__db.cursor.execute("DELETE FROM products WHERE id=?",(id,))
+        self.__db.conn.commit()
+
+    @manage_connection
     def update_by_id(self,product):
         questions = []
         for i,k in enumerate(product.keys()):
@@ -49,34 +60,30 @@ class products(products_ABC):
                 questions.append(k+"=?")
         questions = " ".join(questions)
 
-        self.cursor.execute("UPDATE products SET {} WHERE ID=?".format(questions),(*product.values(),id))
-        self.conn.commit()
-    
-    def get_column_names(self):
-        self.cursor.execute("SELECT column_name FROM information_schema.columns WHERE TABLE_SCHEMA='products' AND TABLE_NAME='products' ORDER BY ordinal_position")
-        columns = self.cursor.fetchall()
-        return [c[0] for c in columns]
+        self.__db.cursor.execute("UPDATE products SET {} WHERE ID=?".format(questions),(*product.values(),id))
+        self.__db.conn.commit()
 
-
+    @manage_connection
     def get_page(self,page):
-        self.cursor.execute("SELECT * FROM products ORDER BY ID LIMIT {} OFFSET {}".format(products_per_page,(page-1)*products_per_page))
-        products = self.cursor.fetchall()
-
-        return [product_to_json(p,self.get_column_names()) for p in products]
+        self.__db.cursor.execute("SELECT * FROM products ORDER BY ID LIMIT {} OFFSET {}".format(products_per_page,(page-1)*products_per_page))
+        products = self.__db.cursor.fetchall()
+        return [object_to_json(p,self.columns) for p in products]
     
+    @manage_connection
     def get_pages(self):
-        self.cursor.execute("SELECT COUNT(*) / {} FROM products".format(products_per_page))
-        columns = self.cursor.fetchone()[0]
+        self.__db.cursor.execute("SELECT COUNT(*) / {} FROM products".format(products_per_page))
+        columns = self.__db.cursor.fetchone()[0]
         return int(columns) +1 if int(columns) < columns else int(columns)
     
+    @manage_connection
     def filter_products(self, filters):
-        self.cursor.execute("""SELECT p.*,t.name FROM products as p
+        self.__db.cursor.execute("""SELECT p.*,t.name FROM products as p
         INNER JOIN categories as c ON c.ID = p.idcategory
         INNER JOIN tagproduct as tp ON tp.idproduct = p.ID
         INNER JOIN tags as t ON tp.idtag = t.ID
         WHERE c.name=%s;""",(filters['category'],))
-        filtered_by_category = self.cursor.fetchall()
-        products = [product_to_json(p,self.get_column_names()+['tag']) for p in filtered_by_category]
+        filtered_by_category = self.__db.cursor.fetchall()
+        products = [object_to_json(p,self.columns+['tag']) for p in filtered_by_category]
         #each product should have tags key which contains all tags from that same product
         unique_products = []
         for product in products:

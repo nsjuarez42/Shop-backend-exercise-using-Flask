@@ -5,26 +5,36 @@ from model.reviews.reviewsmysql import reviews_mysql
 from model.categories.categories_mysql import categories_mysql
 from model.tags.tagsmysql import tags_mysql
 from model.images.images_mysql import images_mysql
+from model.DB.mysqlconnection import Connection
 
-import mysql.connector
 
-class Mysql(DBABC):
-
-    def __new__(cls):
-        if not hasattr(cls,"instance"):
-            cls.instance = super(Mysql,cls).__new__(cls)
-        return cls.instance
+class mysql(DBABC):
 
     def __init__(self):
-        conn = mysql.connector.connect(user="root",database="products",password="root",host="127.0.0.1")
-        cursor = conn.cursor()
-      
-        self.__products = products(conn,cursor)
-        self.__users = users(conn,cursor)
-        self.__reviews = reviews_mysql(conn,cursor)
-        self.__categories = categories_mysql(conn,cursor)
-        self.__tags = tags_mysql(conn,cursor)
-        self.__images = images_mysql(conn,cursor)
+        db = Connection()
+    
+        self.__products = products(db)
+        self.__users = users(db)
+        self.__reviews = reviews_mysql(db)
+        self.__categories = categories_mysql(db)
+        self.__tags = tags_mysql(db)
+        self.__images = images_mysql(db)
+
+    @property
+    def cursor(self):
+        return self.__cursor
+    
+    @cursor.setter
+    def cursor(self,new):
+        self.__cursor = new
+
+    @property
+    def conn(self):
+        return self.__conn
+    
+    @conn.setter
+    def conn(self,c):
+        self.__conn = c
 
     @property
     def products(self):

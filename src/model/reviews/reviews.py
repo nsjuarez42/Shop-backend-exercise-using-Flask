@@ -7,10 +7,6 @@ class reviews_ABC(ABC):
         pass
 
     @abstractmethod
-    def get_column_names(self):
-        pass
-
-    @abstractmethod
     def get_by_product(self,id):
         pass
 

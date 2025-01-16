@@ -14,6 +14,3 @@ class tags(ABC):
     def get_by_product(self):
         pass
 
-    @abstractmethod
-    def get_column_names(self):
-        pass

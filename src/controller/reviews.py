@@ -3,7 +3,7 @@ from model.DB.current import db
 from flask import jsonify,request
 from flask_jwt_extended import jwt_required,get_jwt_identity
 
-REVIEW_COLUMN_NAMES = db.reviews.get_column_names()
+REVIEW_COLUMN_NAMES = db.reviews.columns
 
 @app.route("/reviews/<int:idproduct>")
 def get_by_product(idproduct):

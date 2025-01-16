@@ -1,40 +1,41 @@
 from model.users.users import users_ABC
-
-def user_to_json(user,columns):
-    json = {}
-    for i,c in enumerate(columns):
-        json[c] = user[i]
-    return json
+from model.DB.mysqlhelpers import manage_connection,get_column_names,object_to_json
 
 class users(users_ABC):
 
-    def __init__(self, conn, cursor):
-        self.conn = conn
-        self.cursor = cursor
+    def __init__(self, db):
+        self.__db = db
+        self.__columns = get_column_names("users")
 
+    @property
+    def columns(self):
+        return self.__columns
+    
+    @columns.setter
+    def columns(self,c):
+        self.__columns = c
+
+    @manage_connection
     def get_by_id(self, id):
-        self.cursor.execute("SELECT * FROM users WHERE id=?",(id,))
-        user = self.cursor.fetchone()
-        return user_to_json(user,self.get_column_names()) if user else None
+        self.__db.cursor.execute("SELECT * FROM users WHERE id=?",(id,))
+        user = self.__db.cursor.fetchone()
+        return object_to_json(user,self.columns) if user else None
     
+    @manage_connection
     def get_by_mail(self, mail):
-        self.cursor.execute("SELECT * FROM users WHERE mail=?",(mail,))
-        user = self.cursor.fetchone()
-        return user_to_json(user,self.get_column_names()) if user else None
+        self.__db.cursor.execute("SELECT * FROM users WHERE mail=?",(mail,))
+        user = self.__db.cursor.fetchone()
+        return object_to_json(user,self.columns) if user else None
     
+    @manage_connection
     def get_by_username(self, username):
-        self.cursor.execute("SELECT * FROM users WHERE username=?",(username,)).fetchone()
-        user = self.cursor.fetchone()
-        return user_to_json(user,self.get_column_names()) if user else None 
+        self.__db.cursor.execute("SELECT * FROM users WHERE username=?",(username,)).fetchone()
+        user = self.__db.cursor.fetchone()
+        return object_to_json(user,self.columns) if user else None 
 
-    def get_column_names(self):
-        self.cursor.execute("SELECT column_name FROM information_schema.columns WHERE TABLE_SCHEMA='products' AND TABLE_NAME='users'")
-        columns =self.cursor.fetchall()
-        print(columns)
-        return [c[0] for c in columns]
-    
+    @manage_connection
     def add(self, user):
-        self.cursor.execute("INSERT INTO users VALUES (NULL,?,?,?,?)",(user["name"],user["password"],user["username"],user['mail']))
-        self.conn.commit()
-        return self.cursor.lastrowid
+        self.__db.cursor.execute("INSERT INTO users VALUES (NULL,?,?,?,?)",(user["name"],user["password"],user["username"],user['mail']))
+        self.__db.conn.commit()
+        return self.__db.cursor.lastrowid
 

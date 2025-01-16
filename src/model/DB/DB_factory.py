@@ -1,6 +1,6 @@
 #from model.DB.sqlite_db import sqlite
 #from model.DB.file_db import file_db
-from model.DB.mysql import Mysql
+from model.DB.mysql import mysql
 
 class DB_factory():
     @staticmethod
@@ -10,7 +10,7 @@ class DB_factory():
         #if t == "file":
         #    return file_db()
         if t == "mysql":
-            return Mysql()
+            return mysql()
         
 
 
